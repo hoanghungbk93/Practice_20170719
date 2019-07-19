@@ -1,114 +1,110 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- * @flow
- */
+// App.js
 
-import React, {Fragment} from 'react';
-import {
-  SafeAreaView,
-  StyleSheet,
-  ScrollView,
-  View,
-  Text,
-  StatusBar,
-} from 'react-native';
+import React, { Component } from 'react';
+import { StyleSheet, View, TextInput, Button, FlatList, Text } from 'react-native';
+import ListItem from './components/ListItem';
+import { connect } from 'react-redux';
+import { addPlace } from './actions/place';
+import {increment} from './actions/calculator'
+class App extends Component {
 
-import {
-  Header,
-  LearnMoreLinks,
-  Colors,
-  DebugInstructions,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+  state = {
+    placeName: '',
+    places: [],
+    number : 0
+  }
 
-const App = () => {
+  placeSubmitHandler = () => {
+    if(this.state.placeName.trim() === '') {
+      return;
+    }
+    this.props.add(this.state.placeName);
+    this.props.incre(this.props.number)
+}
+
+placeNameChangeHandler = (value) => {
+  this.setState({
+    placeName: value
+  });    
+}
+
+placesOutput = () => {
+   return (
+    <FlatList style = { styles.listContainer }
+      data = { this.props.places }
+      keyExtractor={(item, index) => index.toString()}
+      renderItem = { info => (
+        <ListItem 
+          placeName={ info.item.value }
+        />
+      )}
+    />
+  )
+}
+
+render() {
   return (
-    <Fragment>
-      <StatusBar barStyle="dark-content" />
-      <SafeAreaView>
-        <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
-          style={styles.scrollView}>
-          <Header />
-          {global.HermesInternal == null ? null : (
-            <View style={styles.engine}>
-              <Text style={styles.footer}>Engine: Hermes</Text>
-            </View>
-          )}
-          <View style={styles.body}>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Step One</Text>
-              <Text style={styles.sectionDescription}>
-                Edit <Text style={styles.highlight}>App.js</Text> to change this
-                screen and then come back to see your edits.
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>See Your Changes</Text>
-              <Text style={styles.sectionDescription}>
-                <ReloadInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Debug</Text>
-              <Text style={styles.sectionDescription}>
-                <DebugInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Learn More</Text>
-              <Text style={styles.sectionDescription}>
-                Read the docs to discover what to do next:
-              </Text>
-            </View>
-            <LearnMoreLinks />
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    </Fragment>
-  );
-};
+    <View style={ styles.container }>
+      <View style = { styles.inputContainer }>
+        <TextInput
+          placeholder = "Seach Places"
+          style = { styles.placeInput }
+          value = { this.state.placeName }
+          onChangeText = { this.placeNameChangeHandler }
+        ></TextInput>
+        <Button title = 'Add' 
+          style = { styles.placeButton }
+          onPress = { this.placeSubmitHandler }
+        />
+        </View>
+        <View style = { styles.listContainer }>
+          { this.placesOutput() }
+        </View>
+        <Text>{this.props.number}</Text>
+      </View>
+    );
+  }
+}
 
 const styles = StyleSheet.create({
-  scrollView: {
-    backgroundColor: Colors.lighter,
+  container: {
+    paddingTop: 30,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
   },
-  engine: {
-    position: 'absolute',
-    right: 0,
+  inputContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%'
   },
-  body: {
-    backgroundColor: Colors.white,
+  placeInput: {
+    width: '70%'
   },
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  placeButton: {
+    width: '30%'
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: Colors.black,
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-    color: Colors.dark,
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-  footer: {
-    color: Colors.dark,
-    fontSize: 12,
-    fontWeight: '600',
-    padding: 4,
-    paddingRight: 12,
-    textAlign: 'right',
-  },
+  listContainer: {
+    width: '100%'
+  }
 });
 
-export default App;
+const mapStateToProps = state => {
+  return {
+    places: state.places.places,
+    number : state.number.number
+  }
+}
+
+const mapDispatchToProps = dispatch => {
+  return {
+    add: (name) => {
+      dispatch(addPlace(name))
+    },
+    incre: (number) => {
+      dispatch(increment(number))
+    }
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(App)
